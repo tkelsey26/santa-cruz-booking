@@ -30,8 +30,8 @@ export default function CalendarPage() {
   }
 
   useEffect(() => {
-    if (profile) fetchData()
-  }, [profile])
+    if (user) fetchData()
+  }, [user, isAdmin])
 
   function handleModalSuccess() {
     setModalDates(null)
