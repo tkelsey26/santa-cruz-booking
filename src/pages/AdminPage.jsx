@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import { parseDate, formatDisplayDate, countNights } from '../lib/bookingRules'
 
-const TABS = ['Pending Requests', 'All Bookings', 'Blocked Dates', 'Users']
+const TABS = ['Bookings', 'Upcoming Stays', 'Blocked Dates', 'Users']
 
 const STATUS_STYLE = {
   pending: 'bg-amber-100 text-amber-700',
@@ -158,7 +158,23 @@ export default function AdminPage() {
     fetchAll()
   }
 
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const pending = bookings.filter(b => b.status === 'pending')
+  const history = bookings.filter(b => b.status !== 'pending')
+
+  // Upcoming Stays: approved bookings + blocked dates, both ending today or later, sorted by start date
+  const upcomingBookings = bookings
+    .filter(b => b.status === 'approved' && parseDate(b.check_out) >= today)
+    .map(b => ({ type: 'booking', date: parseDate(b.check_in), data: b }))
+
+  const upcomingBlocked = blockedDates
+    .filter(b => parseDate(b.end_date) >= today)
+    .map(b => ({ type: 'blocked', date: parseDate(b.start_date), data: b }))
+
+  const upcomingItems = [...upcomingBookings, ...upcomingBlocked]
+    .sort((a, b) => a.date - b.date)
 
   if (loading) {
     return (
@@ -195,45 +211,94 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Pending Requests */}
+        {/* Bookings: pending at top, then history */}
         {tab === 0 && (
-          <div className="space-y-3">
-            {pending.length === 0 ? (
-              <div className="text-center py-16 text-gray-400 text-sm">No pending requests — all clear!</div>
-            ) : (
-              pending.map(b => (
-                <BookingCard
-                  key={b.id}
-                  booking={b}
-                  onApprove={(id, notes) => updateBookingStatus(id, 'approved', notes)}
-                  onReject={(id, notes) => updateBookingStatus(id, 'rejected', notes)}
-                  onDelete={deleteBooking}
-                />
-              ))
+          <div>
+            {bookings.length === 0 && (
+              <div className="text-center py-16 text-gray-400 text-sm">No bookings yet.</div>
+            )}
+
+            {pending.length > 0 && (
+              <section className="mb-8">
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                  Pending Requests
+                </h2>
+                <div className="space-y-3">
+                  {pending.map(b => (
+                    <BookingCard
+                      key={b.id}
+                      booking={b}
+                      onApprove={(id, notes) => updateBookingStatus(id, 'approved', notes)}
+                      onReject={(id, notes) => updateBookingStatus(id, 'rejected', notes)}
+                      onDelete={deleteBooking}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {history.length > 0 && (
+              <section>
+                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+                  History
+                </h2>
+                <div className="space-y-3">
+                  {history.map(b => (
+                    <BookingCard
+                      key={b.id}
+                      booking={b}
+                      onApprove={(id, notes) => updateBookingStatus(id, 'approved', notes)}
+                      onReject={(id, notes) => updateBookingStatus(id, 'rejected', notes)}
+                      onDelete={deleteBooking}
+                    />
+                  ))}
+                </div>
+              </section>
             )}
           </div>
         )}
 
-        {/* All Bookings */}
+        {/* Upcoming Stays: approved bookings + blocked dates, chronological, future only */}
         {tab === 1 && (
           <div className="space-y-3">
-            {bookings.length === 0 ? (
-              <div className="text-center py-16 text-gray-400 text-sm">No bookings yet.</div>
-            ) : (
-              bookings.map(b => (
+            {upcomingItems.length === 0 && (
+              <div className="text-center py-16 text-gray-400 text-sm">Nothing upcoming.</div>
+            )}
+            {upcomingItems.map(({ type, data }) =>
+              type === 'booking' ? (
                 <BookingCard
-                  key={b.id}
-                  booking={b}
+                  key={`booking-${data.id}`}
+                  booking={data}
                   onApprove={(id, notes) => updateBookingStatus(id, 'approved', notes)}
                   onReject={(id, notes) => updateBookingStatus(id, 'rejected', notes)}
                   onDelete={deleteBooking}
                 />
-              ))
+              ) : (
+                <div key={`blocked-${data.id}`} className="bg-white rounded-xl border border-gray-200 px-5 py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                      Blocked
+                    </span>
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">
+                        {formatDisplayDate(parseDate(data.start_date))} → {formatDisplayDate(parseDate(data.end_date))}
+                      </p>
+                      {data.reason && <p className="text-xs text-gray-400 mt-0.5">{data.reason}</p>}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => deleteBlockedDate(data.id)}
+                    className="text-xs text-gray-300 hover:text-red-500 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )
             )}
           </div>
         )}
 
-        {/* Blocked Dates */}
+        {/* Blocked Dates management */}
         {tab === 2 && (
           <div>
             <div className="bg-white rounded-xl border border-gray-200 p-5 mb-4">
