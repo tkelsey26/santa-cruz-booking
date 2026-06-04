@@ -6,7 +6,6 @@ import BookingCalendar from '../components/BookingCalendar'
 import BookingModal from '../components/BookingModal'
 import { getQuotaInfo, isPeakSeason } from '../lib/bookingRules'
 import { Card, CardContent } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
 
 function QuotaBar({ used, total }) {
   const pct = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0
@@ -73,10 +72,7 @@ function RulesPanel({ userRole, userBookings }) {
             <QuotaBar used={peak.used} total={peak.total} />
           </div>
 
-          <div>
-            <div className="hidden sm:block h-full">
-              <Separator orientation="vertical" className="absolute" />
-            </div>
+          <div className="sm:border-l sm:border-slate-100 sm:pl-6">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
               Off-Season · Nov {offStartYear}–May {offStartYear + 1}
             </p>
