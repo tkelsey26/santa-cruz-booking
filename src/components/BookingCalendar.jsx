@@ -19,7 +19,8 @@ function addDays(date, n) {
   return d
 }
 
-export default function BookingCalendar({ bookings, blockedDates, currentUserId, onRangeSelect }) {
+export default function BookingCalendar({ bookings, blockedDates, currentUserId, userRole, onRangeSelect }) {
+  const isAdmin = userRole === 'admin'
   const today = useMemo(() => {
     const d = new Date()
     d.setHours(0, 0, 0, 0)
@@ -44,14 +45,21 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
     for (const b of blockedDates) {
       const start = parseDate(b.start_date)
       const end = parseDate(b.end_date)
-      if (date >= start && date <= end) return 'blocked'
+      // Admins see 'blocked' (distinct colour); guests see it collapsed into 'unavailable'
+      if (date >= start && date <= end) return isAdmin ? 'blocked' : 'unavailable'
     }
     for (const b of bookings) {
       const ci = parseDate(b.check_in)
       const co = parseDate(b.check_out)
       if (date >= ci && date < co) {
-        if (b.status === 'approved') return 'approved'
-        if (b.status === 'pending') return b.user_id === currentUserId ? 'my-pending' : 'other-pending'
+        if (b.status === 'approved') {
+          if (b.user_id === currentUserId) return 'my-approved'
+          return isAdmin ? 'approved' : 'unavailable'
+        }
+        if (b.status === 'pending') {
+          if (b.user_id === currentUserId) return 'my-pending'
+          return isAdmin ? 'other-pending' : 'unavailable'
+        }
       }
     }
     return 'available'
@@ -68,7 +76,7 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
   function handleDayClick(date) {
     if (!date || date < today) return
     const status = getDayStatus(date)
-    if (status === 'blocked' || status === 'approved') return
+    if (['blocked', 'approved', 'my-approved', 'unavailable'].includes(status)) return
 
     if (!selectionStart) {
       setSelectionStart(date)
@@ -89,7 +97,7 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
     let cur = new Date(start)
     while (cur < end) {
       const s = getDayStatus(cur)
-      if (s === 'blocked' || s === 'approved') {
+      if (['blocked', 'approved', 'my-approved', 'unavailable'].includes(s)) {
         setSelectionStart(date)
         return
       }
@@ -117,14 +125,18 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
     if (isStart || inSel) return base + 'bg-indigo-500 text-white font-medium cursor-pointer'
 
     switch (status) {
-      case 'blocked':
-        return base + 'bg-gray-200 text-gray-400 cursor-not-allowed'
-      case 'approved':
+      case 'my-approved':
         return base + 'bg-green-100 text-green-700 cursor-not-allowed'
+      case 'approved': // admin view: someone else's approved booking
+        return base + 'bg-green-50 text-green-600 cursor-not-allowed'
       case 'my-pending':
         return base + 'bg-amber-100 text-amber-700 cursor-not-allowed'
-      case 'other-pending':
+      case 'other-pending': // admin view only
         return base + 'bg-orange-50 text-orange-400 cursor-not-allowed'
+      case 'blocked': // admin view only
+        return base + 'bg-gray-300 text-gray-500 cursor-not-allowed'
+      case 'unavailable': // non-admin view: blocked + others' bookings
+        return base + 'bg-gray-200 text-gray-400 cursor-not-allowed'
       default:
         return base + `text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer ${isToday ? 'ring-2 ring-inset ring-indigo-400 font-semibold' : ''}`
     }
@@ -173,14 +185,21 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
         ))}
       </div>
 
-      {/* Legend */}
+      {/* Legend — simplified for guests, detailed for admins */}
       <div className="mt-5 pt-4 border-t border-gray-100 flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-500">
-        {[
-          ['bg-green-100 border border-green-200', 'Approved booking'],
-          ['bg-amber-100 border border-amber-200', 'Your pending request'],
-          ['bg-gray-200', 'Blocked'],
+        {(isAdmin ? [
+          ['bg-green-100', 'Your approved bookings'],
+          ['bg-green-50 border border-green-100', "Others' bookings"],
+          ['bg-amber-100', 'Your pending request'],
+          ['bg-orange-50 border border-orange-100', "Others' pending"],
+          ['bg-gray-300', 'Blocked'],
           ['bg-indigo-500', 'Your selection'],
-        ].map(([cls, label]) => (
+        ] : [
+          ['bg-green-100', 'Your approved bookings'],
+          ['bg-amber-100', 'Your pending requests'],
+          ['bg-gray-200', 'Unavailable'],
+          ['bg-indigo-500', 'Your selection'],
+        ]).map(([cls, label]) => (
           <span key={label} className="flex items-center gap-1.5">
             <span className={`w-3 h-3 rounded ${cls}`} />
             {label}
