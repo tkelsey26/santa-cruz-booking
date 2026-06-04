@@ -1,5 +1,49 @@
 @import "tailwindcss";
 
+/* ── Design tokens ─────────────────────────────────────────── */
+/* "Sea" brand colour scale – a calm coastal blue               */
+@theme {
+  --color-sea-50:  oklch(0.97 0.02 212);
+  --color-sea-100: oklch(0.93 0.04 212);
+  --color-sea-200: oklch(0.86 0.07 212);
+  --color-sea-300: oklch(0.76 0.10 212);
+  --color-sea-400: oklch(0.67 0.12 212);
+  --color-sea-500: oklch(0.58 0.14 212);
+  --color-sea-600: oklch(0.50 0.13 212);
+  --color-sea-700: oklch(0.42 0.11 212);
+  --color-sea-800: oklch(0.34 0.09 212);
+  --color-sea-900: oklch(0.27 0.07 212);
+}
+
+/* ── Base resets ────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background-color: oklch(0.97 0.01 212);  /* very slight sea tint */
+  color: oklch(0.20 0.02 248);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+/* ── Radix Dialog animations ────────────────────────────────── */
+@keyframes fade-in  { from { opacity: 0 } to { opacity: 1 } }
+@keyframes fade-out { from { opacity: 1 } to { opacity: 0 } }
+@keyframes zoom-in  { from { transform: translate(-50%,-50%) scale(0.96) } to { transform: translate(-50%,-50%) scale(1) } }
+@keyframes zoom-out { from { transform: translate(-50%,-50%) scale(1) }    to { transform: translate(-50%,-50%) scale(0.96) } }
+
+.data-\[state\=open\]\:animate-in[data-state=open]   { animation: fade-in  150ms ease; }
+.data-\[state\=closed\]\:animate-out[data-state=closed] { animation: fade-out 150ms ease; }
+.data-\[state\=open\]\:fade-in-0[data-state=open]    { animation: fade-in  150ms ease; }
+.data-\[state\=closed\]\:fade-out-0[data-state=closed]  { animation: fade-out 150ms ease; }
+.data-\[state\=open\]\:zoom-in-95[data-state=open]   { animation: zoom-in  150ms ease; }
+.data-\[state\=closed\]\:zoom-out-95[data-state=closed] { animation: zoom-out 150ms ease; }
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;

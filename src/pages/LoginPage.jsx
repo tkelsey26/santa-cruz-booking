@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 export default function LoginPage() {
   const [mode, setMode] = useState('login')
@@ -37,86 +41,104 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg max-w-sm w-full p-8">
+    <div className="min-h-screen bg-gradient-to-b from-sea-100 to-sea-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-sm">
+        {/* Header */}
         <div className="text-center mb-8">
           <div className="text-4xl mb-3">🏠</div>
-          <h1 className="text-2xl font-bold text-gray-800">Santa Cruz House</h1>
-          <p className="text-gray-400 text-sm mt-1">Family booking system</p>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Santa Cruz House</h1>
+          <p className="text-slate-500 text-sm mt-1">Family booking system</p>
         </div>
 
-        {message && (
-          <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
-            {message}
-          </div>
-        )}
+        <Card>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-base">
+              {mode === 'login' ? 'Welcome back' : 'Create an account'}
+            </CardTitle>
+            <CardDescription>
+              {mode === 'login'
+                ? 'Sign in to view and manage bookings.'
+                : 'Join the house booking system.'}
+            </CardDescription>
+          </CardHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {mode === 'signup' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Full name</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
-                required
-                placeholder="Your full name"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-          )}
+          <CardContent>
+            {message && (
+              <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-700">
+                {message}
+              </div>
+            )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              placeholder="you@example.com"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {mode === 'signup' && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Full name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={fullName}
+                    onChange={e => setFullName(e.target.value)}
+                    required
+                    placeholder="Your full name"
+                  />
+                </div>
+              )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-              minLength={6}
-              placeholder="••••••••"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  placeholder="you@example.com"
+                />
+              </div>
 
-          {error && <p className="text-sm text-red-600">{error}</p>}
+              <div className="space-y-1.5">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  placeholder="••••••••"
+                />
+              </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium text-sm hover:bg-indigo-700 disabled:opacity-50 transition-colors"
-          >
-            {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
-          </button>
-        </form>
+              {error && <p className="text-sm text-rose-600">{error}</p>}
 
-        <p className="text-center text-sm text-gray-400 mt-6">
-          {mode === 'login' ? (
-            <>New to the house?{' '}
-              <button onClick={() => { setMode('signup'); setError(null) }} className="text-indigo-600 hover:underline">
-                Create an account
-              </button>
-            </>
-          ) : (
-            <>Already have an account?{' '}
-              <button onClick={() => { setMode('login'); setError(null) }} className="text-indigo-600 hover:underline">
-                Sign in
-              </button>
-            </>
-          )}
-        </p>
+              <Button type="submit" disabled={loading} className="w-full">
+                {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+              </Button>
+            </form>
+
+            <p className="text-center text-sm text-slate-500 mt-5">
+              {mode === 'login' ? (
+                <>New here?{' '}
+                  <button
+                    onClick={() => { setMode('signup'); setError(null) }}
+                    className="text-sea-600 hover:underline font-medium"
+                  >
+                    Create an account
+                  </button>
+                </>
+              ) : (
+                <>Have an account?{' '}
+                  <button
+                    onClick={() => { setMode('login'); setError(null) }}
+                    className="text-sea-600 hover:underline font-medium"
+                  >
+                    Sign in
+                  </button>
+                </>
+              )}
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )

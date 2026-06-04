@@ -121,24 +121,24 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
 
     const base = 'h-10 flex items-center justify-center text-sm rounded transition-colors select-none '
 
-    if (isPast) return base + 'text-gray-300 cursor-default'
-    if (isStart || inSel) return base + 'bg-indigo-500 text-white font-medium cursor-pointer'
+    if (isPast) return base + 'text-slate-300 cursor-default'
+    if (isStart || inSel) return base + 'bg-sea-500 text-white font-semibold cursor-pointer'
 
     switch (status) {
       case 'my-approved':
-        return base + 'bg-green-100 text-green-700 cursor-not-allowed'
-      case 'approved': // admin view: someone else's approved booking
-        return base + 'bg-green-50 text-green-600 cursor-not-allowed'
+        return base + 'bg-emerald-50 text-emerald-700 cursor-not-allowed'
+      case 'approved':
+        return base + 'bg-emerald-50/60 text-emerald-600 cursor-not-allowed'
       case 'my-pending':
-        return base + 'bg-amber-100 text-amber-700 cursor-not-allowed'
-      case 'other-pending': // admin view only
-        return base + 'bg-orange-50 text-orange-400 cursor-not-allowed'
-      case 'blocked': // admin view only
-        return base + 'bg-gray-300 text-gray-500 cursor-not-allowed'
-      case 'unavailable': // non-admin view: blocked + others' bookings
-        return base + 'bg-gray-200 text-gray-400 cursor-not-allowed'
+        return base + 'bg-amber-50 text-amber-700 cursor-not-allowed'
+      case 'other-pending':
+        return base + 'bg-orange-50 text-orange-500 cursor-not-allowed'
+      case 'blocked':
+        return base + 'bg-slate-200 text-slate-500 cursor-not-allowed'
+      case 'unavailable':
+        return base + 'bg-slate-100 text-slate-400 cursor-not-allowed'
       default:
-        return base + `text-gray-700 hover:bg-indigo-50 hover:text-indigo-600 cursor-pointer ${isToday ? 'ring-2 ring-inset ring-indigo-400 font-semibold' : ''}`
+        return base + `text-slate-700 hover:bg-sea-50 hover:text-sea-700 cursor-pointer ${isToday ? 'ring-2 ring-inset ring-sea-400 font-semibold' : ''}`
     }
   }
 
@@ -155,18 +155,18 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
       {/* Month navigation */}
       <div className="flex items-center justify-between mb-6">
-        <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-xl leading-none">‹</button>
-        <h2 className="text-lg font-semibold text-gray-800">{MONTH_NAMES[viewMonth]} {viewYear}</h2>
-        <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 text-xl leading-none">›</button>
+        <button onClick={prevMonth} className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 text-xl leading-none transition-colors">‹</button>
+        <h2 className="text-base font-semibold text-slate-800">{MONTH_NAMES[viewMonth]} {viewYear}</h2>
+        <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 text-xl leading-none transition-colors">›</button>
       </div>
 
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 mb-1">
         {DAY_LABELS.map(d => (
-          <div key={d} className="text-center text-xs font-medium text-gray-400 py-1">{d}</div>
+          <div key={d} className="text-center text-xs font-medium text-slate-400 py-1">{d}</div>
         ))}
       </div>
 
@@ -186,7 +186,7 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
       </div>
 
       {/* Legend — simplified for guests, detailed for admins */}
-      <div className="mt-5 pt-4 border-t border-gray-100 flex flex-wrap gap-x-5 gap-y-2 text-xs text-gray-500">
+      <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
         {(isAdmin ? [
           ['bg-green-100', 'Your approved bookings'],
           ['bg-green-50 border border-green-100', "Others' bookings"],
@@ -208,7 +208,7 @@ export default function BookingCalendar({ bookings, blockedDates, currentUserId,
       </div>
 
       {selectionStart && (
-        <p className="mt-3 text-sm text-indigo-600 font-medium">
+        <p className="mt-3 text-sm text-sea-600 font-medium">
           Check-in: {selectionStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — now click your check-out date
         </p>
       )}

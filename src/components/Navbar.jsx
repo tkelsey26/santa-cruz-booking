@@ -1,5 +1,8 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 export default function Navbar() {
   const { profile, isAdmin, signOut } = useAuth()
@@ -16,11 +19,12 @@ export default function Navbar() {
     return (
       <Link
         to={to}
-        className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+        className={cn(
+          'px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
           active
-            ? 'bg-indigo-700 text-white'
-            : 'text-indigo-100 hover:bg-indigo-700 hover:text-white'
-        }`}
+            ? 'bg-white/20 text-white'
+            : 'text-sea-100 hover:bg-white/10 hover:text-white'
+        )}
       >
         {children}
       </Link>
@@ -28,38 +32,37 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-indigo-600 shadow-sm">
+    <header className="bg-sea-600 border-b border-sea-700 shadow-sm">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex items-center justify-between h-14">
+          {/* Brand + nav */}
           <div className="flex items-center gap-1">
-            <span className="text-white font-semibold mr-3">🏠 Santa Cruz House</span>
+            <span className="text-white font-semibold text-sm mr-3 tracking-wide">
+              🏠 Santa Cruz
+            </span>
             <NavLink to="/">Calendar</NavLink>
             <NavLink to="/my-bookings">My Bookings</NavLink>
             {isAdmin && <NavLink to="/admin">Admin</NavLink>}
           </div>
+
+          {/* User info + sign out */}
           <div className="flex items-center gap-3">
-            <span className="text-indigo-200 text-sm hidden sm:block">
-              {profile?.full_name}
-              {isAdmin && (
-                <span className="ml-1.5 text-xs bg-indigo-800 text-indigo-200 px-1.5 py-0.5 rounded">
-                  Admin
-                </span>
-              )}
-              {profile?.role === 'priority_guest' && (
-                <span className="ml-1.5 text-xs bg-amber-500 text-white px-1.5 py-0.5 rounded">
-                  Priority
-                </span>
-              )}
-            </span>
-            <button
+            <div className="hidden sm:flex items-center gap-1.5">
+              <span className="text-sea-100 text-sm">{profile?.full_name}</span>
+              {isAdmin && <Badge variant="admin">Admin</Badge>}
+              {profile?.role === 'priority_guest' && <Badge variant="priority">Priority</Badge>}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={handleSignOut}
-              className="text-indigo-200 hover:text-white text-sm px-3 py-1.5 rounded-md border border-indigo-400 hover:border-indigo-200 transition-colors"
+              className="border-sea-400 text-sea-100 bg-transparent hover:bg-white/10 hover:text-white hover:border-sea-300"
             >
               Sign out
-            </button>
+            </Button>
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   )
 }
