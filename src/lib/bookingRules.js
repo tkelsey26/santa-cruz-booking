@@ -79,15 +79,15 @@ export function validateBooking(checkIn, checkOut, userRole, existingUserBooking
       }
     }
   } else {
-    if (nights > 14) {
-      return { valid: false, reason: 'Off-season (November–May) stays are limited to 14 nights for regular guests.' }
+    if (nights > 7) {
+      return { valid: false, reason: 'Off-season (November–May) stays are limited to 7 nights for regular guests.' }
     }
     const used = usedNightsInPeriod(checkIn, existingUserBookings)
-    if (used + nights > 30) {
-      const remaining = Math.max(0, 30 - used)
+    if (used + nights > 7) {
+      const remaining = Math.max(0, 7 - used)
       return {
         valid: false,
-        reason: `You have ${remaining} off-season night${remaining === 1 ? '' : 's'} remaining this season (30 total). This stay requires ${nights}.`,
+        reason: `You have ${remaining} off-season night${remaining === 1 ? '' : 's'} remaining this season (7 total). This stay requires ${nights}.`,
       }
     }
   }
@@ -105,6 +105,6 @@ export function getQuotaInfo(checkIn, userRole, existingBookings) {
   if (peak) {
     return { unlimited: false, used, total: 7, remaining: Math.max(0, 7 - used), season: 'peak', maxStay: 7 }
   } else {
-    return { unlimited: false, used, total: 30, remaining: Math.max(0, 30 - used), season: 'off-season', maxStay: 14 }
+    return { unlimited: false, used, total: 7, remaining: Math.max(0, 7 - used), season: 'off-season', maxStay: 7 }
   }
 }
