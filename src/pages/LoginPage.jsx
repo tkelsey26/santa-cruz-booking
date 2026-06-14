@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,6 +18,14 @@ export default function LoginPage() {
 
   const { signIn, signUp } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const locationMessage = location.state?.message
+
+  function switchMode(next) {
+    setMode(next)
+    setError(null)
+    setMessage(null)
+  }
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -28,13 +37,22 @@ export default function LoginPage() {
       const { error } = await signIn(email, password)
       if (error) setError(error.message)
       else navigate('/')
-    } else {
+    } else if (mode === 'signup') {
       const { error } = await signUp(email, password, fullName)
       if (error) {
         setError(error.message)
       } else {
         setMessage('Account created! Check your email to confirm, then sign in.')
         setMode('login')
+      }
+    } else if (mode === 'forgot') {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      })
+      if (error) {
+        setError(error.message)
+      } else {
+        setMessage('Check your email for a password reset link.')
       }
     }
     setLoading(false)
@@ -53,19 +71,21 @@ export default function LoginPage() {
         <Card>
           <CardHeader className="pb-4">
             <CardTitle className="text-base">
-              {mode === 'login' ? 'Welcome back' : 'Create an account'}
+              {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create an account' : 'Reset your password'}
             </CardTitle>
             <CardDescription>
               {mode === 'login'
                 ? 'Sign in to view and manage bookings.'
-                : 'Join the house booking system.'}
+                : mode === 'signup'
+                ? 'Join the house booking system.'
+                : 'Enter your email and we\'ll send you a reset link.'}
             </CardDescription>
           </CardHeader>
 
           <CardContent>
-            {message && (
+            {(message || locationMessage) && (
               <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-700">
-                {message}
+                {message || locationMessage}
               </div>
             )}
 
@@ -96,43 +116,50 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  placeholder="••••••••"
-                />
-              </div>
+              {mode !== 'forgot' && (
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {mode === 'login' && (
+                      <button
+                        type="button"
+                        onClick={() => switchMode('forgot')}
+                        className="text-xs text-slate-400 hover:text-sea-600 hover:underline"
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    placeholder="••••••••"
+                  />
+                </div>
+              )}
 
               {error && <p className="text-sm text-rose-600">{error}</p>}
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}
+                {loading ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'signup' ? 'Create account' : 'Send reset link'}
               </Button>
             </form>
 
             <p className="text-center text-sm text-slate-500 mt-5">
               {mode === 'login' ? (
                 <>New here?{' '}
-                  <button
-                    onClick={() => { setMode('signup'); setError(null) }}
-                    className="text-sea-600 hover:underline font-medium"
-                  >
+                  <button onClick={() => switchMode('signup')} className="text-sea-600 hover:underline font-medium">
                     Create an account
                   </button>
                 </>
               ) : (
-                <>Have an account?{' '}
-                  <button
-                    onClick={() => { setMode('login'); setError(null) }}
-                    className="text-sea-600 hover:underline font-medium"
-                  >
-                    Sign in
+                <>
+                  <button onClick={() => switchMode('login')} className="text-sea-600 hover:underline font-medium">
+                    Back to sign in
                   </button>
                 </>
               )}
